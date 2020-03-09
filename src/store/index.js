@@ -1,5 +1,6 @@
 import Vue from "vue";
 import Vuex from "vuex";
+import {search} from "../helpers/axios";
 
 Vue.use(Vuex);
 
@@ -25,8 +26,16 @@ export default new Vuex.Store({
   },
   actions: {
     setHeroes: ({ commit }, data) => commit("settingHeroes", data),
-    setSearchItem: ({ commit }, searchItem) => 
-      commit("settingSearchItem", searchItem),
+    setSearchItem: async ({ commit, dispatch }, searchItem) => {
+      commit("settingSearchItem", searchItem)
+      dispatch("changeNotFound", false)
+      commit("changingLoading", true)
+      const heroes = await search(searchItem)
+      commit("changingLoading", false)
+      heroes.data?.results
+        ? dispatch("setHeroes", heroes.data.results)
+        : dispatch("changeNotFound", true) && dispatch("setHeroes", [])
+    },
     changeLoading: ({ commit }, status) => commit("changingLoading", status),
     changeNotFound: ({ commit }, status) => commit("changingNotFound", status),
   }
